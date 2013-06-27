@@ -1,0 +1,16 @@
+{
+  "name": "rdbp",
+  "version": "0.0.1",
+  "description": "Redis RDB parsing tools",
+  "main": "rdbp.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": "",
+  "keywords": [
+    "Redis",
+    "RDB"
+  ],
+  "author": "Danny Yates",
+  "license": "BSD"
+}
