@@ -27,7 +27,6 @@ function RdbParser(options) {
     self._bytes(9, onMagic);
 
     function onMagic(buffer, output) {
-        debug('checking magic header');
 
         var magic = buffer.toString('ascii', 0, 9);
 
@@ -50,22 +49,16 @@ function RdbParser(options) {
     }
 
     function onRecord(buffer, output) {
-        debug('parsing record');
         if (buffer[0] === 0xFF) {
-            debug('eof record');
             output({type: 'end'});
             self._bytes(8, onCRC);
         } else if (buffer[0] === 0xFE) {
-            debug('database record');
             onDatabase();
         } else if (buffer[0] === 0xFD) {
-            debug('key/value with expiry in secs');
             onExpirySecs();
         } else if (buffer[0] === 0xFC) {
-            debug('key/value with expiry in millis');
             onExpiryMillis();
         } else {
-            debug('key/value with no expiry');
             onKey(undefined, buffer[0], output);
         }
     }
@@ -105,9 +98,7 @@ function RdbParser(options) {
     }
 
     function onKey(expiry, valueType) {
-        debug('value type ' + valueType);
         getBytes(function(keyBuffer, output) {
-            debug('key: ' + keyBuffer.toString(encoding));
             var object = {
                 type: 'key',
                 database: currentDatabase,
@@ -117,44 +108,35 @@ function RdbParser(options) {
 
             switch(valueType) {
                 case 0:
-                    debug('decoding string');
                     onStringEncodedValue(object);
                     break;
                 case 1:
-                    debug('decoding list');
-                    onListEncodedValue(object);
+                    onListOrSetEncodedValue(object);
                     break;
                 case 2:
-                    debug('decoding set');
-                    onSetEncodedValue(object);
+                    onListOrSetEncodedValue(object);
                     break;
                 case 3:
-                    debug('decoding sorted set');
-                    onSortedSetEncodedValue(object);
-                    break;
+                    // The documentation doesn't describe this encoding and node of the example RDB files seem
+                    // to use it! Perhaps it's never found in the wild any more?
+                    throw new Error('Unsupported encoding');
                 case 4:
-                    debug('decoding hash');
                     onHashEncodedValue(object);
                     break;
                 case 9:
-                    debug('decoding zipmap');
                     onZipMapEncodedValue(object);
                     break;
                 case 10:
-                    debug('decoding ziplist');
                     onZipListEncodedValue(object);
                     break;
                 case 11:
-                    debug('decoding intset');
                     onIntSetEncodedValue(object);
                     break;
                 case 12:
-                    debug('decoding ziplist encoded sorted set');
-                    onZipListEncodedSortedSetValue(object);
+                    onZipListEncodedHashOrSortedSetValue(object);
                     break;
                 case 13:
-                    debug('decoding ziplist encoded hash');
-                    onZipListEncodedHashValue(object);
+                    onZipListEncodedHashOrSortedSetValue(object);
                     break;
             }
         });
@@ -168,7 +150,7 @@ function RdbParser(options) {
         })
     }
 
-    function onListEncodedValue(object) {
+    function onListOrSetEncodedValue(object) {
         getLengthEncoding(function(n, special, output) {
             if (special) throw new Error('Unexpected special length encoding in list');
 
@@ -183,6 +165,9 @@ function RdbParser(options) {
                 }
             }
 
+            // This could cause a very deep stack except that we rely on the underlying _bytes() calls
+            // to either unwind the stack if they need to asynchronously wait for more data, or else to
+            // trampoline to avoid stack overflow.
             function getListEntry(n) {
                 getBytes(function(entryBuffer) {
                     object.value.push(entryBuffer.toString(encoding));
@@ -283,14 +268,6 @@ function RdbParser(options) {
         })
     }
 
-    // function onIntSetEncodedValue(object) {
-    //     getBytes(function(intSetBuffer, output) {
-    //         object.value = '<IntSet>';
-    //         output(object);
-    //         self._bytes(1, onRecord);
-    //     });
-    // }
-
     function onZipListEncodedValue(object) {
         getZipList(function(values, output) {
             object.value = values;
@@ -336,7 +313,7 @@ function RdbParser(options) {
         });
     }
 
-    function onZipListEncodedHashValue(object) {
+    function onZipListEncodedHashOrSortedSetValue(object) {
         getZipList(function(values, output) {
             object.value = {};
 
@@ -357,8 +334,6 @@ function RdbParser(options) {
                 numEntries = zipListBuffer.readUInt16LE(8),
                 prevEntryLen = 0,
                 values = [];
-
-            debug('ziplist with ' + bytes + ' bytes and ' + numEntries + ' entries');
 
             i += 4 + 4 + 2;
 
@@ -439,30 +414,25 @@ function RdbParser(options) {
     }
 
     function getLengthEncoding(cb) {
-        debug('reading 1 byte for length encoding');
         self._bytes(1, function(buffer, output) {
             var type = buffer[0] >> 6,
                 lowBits = buffer[0] & 0x3F;
 
             switch(type) {
                 case 0:
-                    debug('top bits 00xxxxxx: returning lower 6 bits: ' + lowBits);
                     cb(lowBits, false, output);
                     break;
                 case 1:
-                    debug('top bits 01xxxxxx: reading 1 further byte');
                     self._bytes(1, function(buffer) {
                         cb((lowBits << 8) | buffer[0], false, output);
                     });
                     break;
                 case 2:
-                    debug('top bits 10xxxxxx: reading 4 further bytes');
                     self._bytes(4, function(buffer) {
                         cb(buffer.readInt32BE(0), false, output);
                     });
                     break;
                 case 3:
-                    debug('top bits 11xxxxxx: special encoding with discriminator ' + lowBits);
                     cb(lowBits, true, output);
                     break;
             }
@@ -470,37 +440,30 @@ function RdbParser(options) {
     }
 
     function getBytes(cb) {
-        debug('reading bytes');
         getLengthEncoding(function(n, special, output) {
             if (!special) {
-                debug('standard length encoding; reading ' + n + ' bytes');
                 self._bytes(n, function(buffer, output) {
-                    debug(n + ' bytes read');
                     if (buffer.length != n) throw new Error('Incorrect read length');
                     cb(buffer, output);
                 });
             } else {
                 switch (n) {
                     case 0:
-                        debug('single byte special encoding; reading 1 byte');
                         self._bytes(1, function(buffer, output) {
                             cb(new Buffer(buffer.readInt8(0) + '', encoding), output);
                         });
                         break;
                     case 1:
-                        debug('double byte special encoding; reading 2 bytes');
                         self._bytes(2, function(buffer, output) {
                             cb(new Buffer(buffer.readInt16LE(0) + '', encoding), output);
                         });
                         break;
                     case 2:
-                        debug('quad byte special encoding; reading 4 bytes');
                         self._bytes(4, function(buffer, output) {
                             cb(new Buffer(buffer.readInt32LE(0) + '', encoding), output);
                         });
                         break;
                     case 3:
-                        debug('compressed string');
                         getCompressedString(cb);
                         break;
                     default:
@@ -519,7 +482,6 @@ function RdbParser(options) {
 
                 self._bytes(compressedLen, function(buffer, output) {
                     var decompressed = lzf.decompress(buffer);
-                    debug('decompressed data: ' + util.inspect(decompressed));
                     cb(decompressed, output);
                 });
             });

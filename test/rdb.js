@@ -182,11 +182,34 @@ describe('Parser', function() {
         })
     });
 
+    it('should handle regular sets', function(done) {
+        load('regular_set.rdb', function(data) {
+            assert.lengthOf(data.allKeys[0]['regular_set'].value, 6);
+            assert.include(data.allKeys[0]['regular_set'].value, 'alpha');
+            assert.include(data.allKeys[0]['regular_set'].value, 'beta');
+            assert.include(data.allKeys[0]['regular_set'].value, 'gamma');
+            assert.include(data.allKeys[0]['regular_set'].value, 'delta');
+            assert.include(data.allKeys[0]['regular_set'].value, 'phi');
+            assert.include(data.allKeys[0]['regular_set'].value, 'kappa');
+            done();
+        })
+    });
+
+    it('should handle ziplist encoded sorted sets', function(done) {
+        load('sorted_set_as_ziplist.rdb', function(data) {
+            assert.lengthOf(_.keys(data.allKeys[0]['sorted_set_as_ziplist'].value), 3);
+            assert.equal(data.allKeys[0]['sorted_set_as_ziplist'].value['8b6ba6718a786daefa69438148361901'], '1');
+            assert.equal(data.allKeys[0]['sorted_set_as_ziplist'].value['cb7a24bb7528f934b841b34c3a73e0c7'], '2.3700000000000001');
+            assert.equal(data.allKeys[0]['sorted_set_as_ziplist'].value['523af537946b79c4f8369ed39ba78605'], '3.423');
+            done();
+        })
+    });
+
     // TO DO:
     //   * expiry in seconds
     //   * explicity testing different file format versions
     //   * CRC
-    //   * ZipList encoded hash value with 3-byte encoding
+    //   * sorted set encoding
 })
 
 function load(database, debug, cb) {
