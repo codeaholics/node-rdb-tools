@@ -4,13 +4,27 @@
   "description": "Redis RDB parsing tools",
   "main": "rdbp.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "NODE_ENV=test mocha -R spec"
   },
-  "repository": "",
+  "repository": "https://github.com/codeaholics/rdbp.git",
   "keywords": [
     "Redis",
     "RDB"
   ],
   "author": "Danny Yates",
-  "license": "BSD"
+  "license": "BSD",
+  "dependencies": {
+    "stream-parser": "git+https://github.com/TooTallNate/node-stream-parser.git#v0.1.0",
+    "lzf": "~0.1.3",
+    "int64-native": "git+https://github.com/codeaholics/node-int64-native.git#master",
+    "debug": "~0.7.2"
+  },
+  "devDependencies": {
+    "mocha": "~1.11.0",
+    "chai": "~1.7.2",
+    "underscore": "~1.4.4"
+  },
+  "bin": {
+    "rdbdump": "./bin/rdbdump"
+  }
 }
