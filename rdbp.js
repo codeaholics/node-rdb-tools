@@ -96,8 +96,8 @@ function RdbParser(options) {
 
     function onExpiryMillis(buffer, output) {
         self._bytes(9, function(buffer, output) {
-            var low = buffer.readInt32LE(0),
-                high = buffer.readInt32LE(4),
+            var low = buffer.readUInt32LE(0),
+                high = buffer.readUInt32LE(4),
                 expiryMillis = (new Int64(high, low)).valueOf(); // +inf if > 1<<53
 
             onKey(expiryMillis, buffer[8]);
@@ -168,6 +168,32 @@ function RdbParser(options) {
         })
     }
 
+    function onListEncodedValue(object) {
+        getLengthEncoding(function(n, special, output) {
+            if (special) throw new Error('Unexpected special length encoding in list');
+
+            object.value = [];
+
+            function next(n) {
+                if (n > 0) {
+                    getListEntry(n - 1);
+                } else {
+                    output(object);
+                    self._bytes(1, onRecord);
+                }
+            }
+
+            function getListEntry(n) {
+                getBytes(function(entryBuffer) {
+                    object.value.push(entryBuffer.toString(encoding));
+                    next(n);
+                });
+            }
+
+            next(n);
+        });
+    }
+
     function onHashEncodedValue(object) {
         getLengthEncoding(function(n, special, output) {
             if (special) throw new Error('Unexpected special length encoding in hash');
@@ -183,6 +209,9 @@ function RdbParser(options) {
                 }
             }
 
+            // This could cause a very deep stack except that we rely on the underlying _bytes() calls
+            // to either unwind the stack if they need to asynchronously wait for more data, or else to
+            // trampoline to avoid stack overflow.
             function getHashEncodedPair(n) {
                 getBytes(function(keyBuffer) {
                     getBytes(function(valueBuffer, output) {
@@ -270,6 +299,43 @@ function RdbParser(options) {
         });
     }
 
+    function onIntSetEncodedValue(object) {
+        getBytes(function(intSetBuffer, output) {
+            var i = 0,
+                values = [],
+                entryWidth = intSetBuffer.readUInt32LE(0),
+                numEntries = intSetBuffer.readUInt32LE(4);
+
+            i += 4 + 4;
+
+            for (var j = 1; j <= numEntries; j++) {
+                switch (entryWidth) {
+                    case 2:
+                        values.push(intSetBuffer.readInt16LE(i) + '');
+                        break;
+                    case 4:
+                        values.push(intSetBuffer.readInt32LE(i) + '');
+                        break;
+                    case 8:
+                        var low = intSetBuffer.readUInt32LE(i),
+                            high = intSetBuffer.readUInt32LE(i + 4);
+                        values.push(new Int64(high, low).toSignedDecimalString());
+                        break;
+                    default:
+                        throw new Error('Unexpected IntSet width');
+                }
+
+                i += entryWidth;
+            }
+
+            if (i != intSetBuffer.length) throw new Error('IntSet failed to occupy entire buffer');
+
+            object.value = values;
+            output(object);
+            self._bytes(1, onRecord);
+        });
+    }
+
     function onZipListEncodedHashValue(object) {
         getZipList(function(values, output) {
             object.value = {};
@@ -339,19 +405,20 @@ function RdbParser(options) {
                     value = zipListBuffer.readInt32LE(i) + '';
                     i += 4;
                 } else if ((flag & 0xF0) == 0xE0) {
-                    var low = zipListBuffer.readInt32LE(i),
-                        high = zipListBuffer.readInt32LE(i + 4);
+                    var low = zipListBuffer.readUInt32LE(i),
+                        high = zipListBuffer.readUInt32LE(i + 4);
                     value = new Int64(high, low).toSignedDecimalString();
                     i += 8;
                 } else if (flag == 0xF0) {
                     // TODO: Is this the correct byte order? I've assumed LE.
                     var n = (zipListBuffer[i + 2] << 16) | (zipListBuffer[i + 1] << 8) | zipListBuffer[i];
                     // Sign extension
-                    if (n & 0x800000 != 0) n = n | 0xFF000000;
+                    if ((n & 0x800000) != 0) n = n | 0xFF000000;
                     value = n + '';
                     i += 3;
                 } else if (flag == 0xFE) {
-                    value = zipListBuffer[i++] + '';
+                    value = zipListBuffer.readInt8(i) + '';
+                    i += 1;
                 } else if (flag >= 0xF1 && flag <= 0xFD) {
                     value = ((flag & 0x0F) - 1) + '';
                 } else {

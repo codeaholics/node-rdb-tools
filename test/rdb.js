@@ -127,6 +127,41 @@ describe('Parser', function() {
         })
     });
 
+    it('should handle ziplist with integers', function(done) {
+        load('ziplist_with_integers.rdb', function(data) {
+            var expected = [];
+
+            _.times(13, function(n) { expected.push(n + ''); });
+            expected = expected.concat(['-2', '13', '25', '-61', '63', '16380', '-16000', '65535', '-65523', '4194304', '9223372036854775807']);
+
+            assert.lengthOf(data.allKeys[0]['ziplist_with_integers'].value, expected.length);
+            _.each(expected, function(e) {
+                assert.include(data.allKeys[0]['ziplist_with_integers'].value, e);
+            });
+
+            done();
+        })
+    });
+
+    it('should handle linked lists', function(done) {
+        load('linkedlist.rdb', function(data) {
+            assert.lengthOf(data.allKeys[0]['force_linkedlist'].value, 1000);
+            assert.include(data.allKeys[0]['force_linkedlist'].value, 'JYY4GIFI0ETHKP4VAJF5333082J4R1UPNPLE329YT0EYPGHSJQ');
+            assert.include(data.allKeys[0]['force_linkedlist'].value, 'TKBXHJOX9Q99ICF4V78XTCA2Y1UYW6ERL35JCIL1O0KSGXS58S');
+            done();
+        })
+    });
+
+    it('should handle 16 bit intsets', function(done) {
+        load('intset_16.rdb', function(data) {
+            assert.lengthOf(data.allKeys[0]['intset_16'].value, 3);
+            assert.include(data.allKeys[0]['intset_16'].value, '32766');
+            assert.include(data.allKeys[0]['intset_16'].value, '32765');
+            assert.include(data.allKeys[0]['intset_16'].value, '32764');
+            done();
+        })
+    });
+
     // TO DO:
     //   * expiry in seconds
     //   * explicity testing different file format versions
