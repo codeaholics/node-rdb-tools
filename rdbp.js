@@ -168,6 +168,34 @@ function RdbParser(options) {
         })
     }
 
+    function onHashEncodedValue(object) {
+        getLengthEncoding(function(n, special, output) {
+            if (special) throw new Error('Unexpected special length encoding in hash');
+
+            object.value = {};
+
+            function next(n) {
+                if (n > 0) {
+                    getHashEncodedPair(n - 1);
+                } else {
+                    output(object);
+                    self._bytes(1, onRecord);
+                }
+            }
+
+            function getHashEncodedPair(n) {
+                getBytes(function(keyBuffer) {
+                    getBytes(function(valueBuffer, output) {
+                        object.value[keyBuffer.toString(encoding)] = valueBuffer.toString(encoding);
+                        next(n);
+                    });
+                });
+            }
+
+            next(n);
+        });
+    }
+
     function onZipMapEncodedValue(object) {
         getBytes(function(zipMapBuffer, output) {
             var i = 0,
@@ -233,6 +261,14 @@ function RdbParser(options) {
     //         self._bytes(1, onRecord);
     //     });
     // }
+
+    function onZipListEncodedValue(object) {
+        getZipList(function(values, output) {
+            object.value = values;
+            output(object);
+            self._bytes(1, onRecord);
+        });
+    }
 
     function onZipListEncodedHashValue(object) {
         getZipList(function(values, output) {

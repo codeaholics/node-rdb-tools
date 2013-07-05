@@ -87,6 +87,46 @@ describe('Parser', function() {
         })
     });
 
+    it('should handle ziplist encoded hashes', function(done) {
+        load('hash_as_ziplist.rdb', function(data) {
+            assert.equal(data.allKeys[0]['zipmap_compresses_easily'].value['a'], 'aa');
+            assert.equal(data.allKeys[0]['zipmap_compresses_easily'].value['aa'], 'aaaa');
+            assert.equal(data.allKeys[0]['zipmap_compresses_easily'].value['aaaaa'], 'aaaaaaaaaaaaaa');
+            done();
+        })
+    });
+
+    it('should handle "the dictionary"', function(done) {
+        load('dictionary.rdb', function(data) {
+            assert.lengthOf(_.keys(data.allKeys[0]['force_dictionary'].value), 1000);
+            assert.equal(data.allKeys[0]['force_dictionary'].value['ZMU5WEJDG7KU89AOG5LJT6K7HMNB3DEI43M6EYTJ83VRJ6XNXQ'], 'T63SOS8DQJF0Q0VJEZ0D1IQFCYTIPSBOUIAI9SB0OV57MQR1FI');
+            assert.equal(data.allKeys[0]['force_dictionary'].value['UHS5ESW4HLK8XOGTM39IK1SJEUGVV9WOPK6JYA5QBZSJU84491'], '6VULTCV52FXJ8MGVSFTZVAGK2JXZMGQ5F8OVJI0X6GEDDR27RZ');
+            done();
+        })
+    });
+
+    it('should handle a ziplist that compresses easily', function(done) {
+        load('ziplist_that_compresses_easily.rdb', function(data) {
+            assert.lengthOf(data.allKeys[0]['ziplist_compresses_easily'].value, 6);
+            assert.equal(data.allKeys[0]['ziplist_compresses_easily'].value[0], 'aaaaaa');
+            assert.equal(data.allKeys[0]['ziplist_compresses_easily'].value[1], 'aaaaaaaaaaaa');
+            assert.equal(data.allKeys[0]['ziplist_compresses_easily'].value[2], 'aaaaaaaaaaaaaaaaaa');
+            assert.equal(data.allKeys[0]['ziplist_compresses_easily'].value[3], 'aaaaaaaaaaaaaaaaaaaaaaaa');
+            assert.equal(data.allKeys[0]['ziplist_compresses_easily'].value[4], 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+            assert.equal(data.allKeys[0]['ziplist_compresses_easily'].value[5], 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+            done();
+        })
+    });
+
+    it('should handle a ziplist that doesn\'t compress', function(done) {
+        load('ziplist_that_doesnt_compress.rdb', function(data) {
+            assert.lengthOf(data.allKeys[0]['ziplist_doesnt_compress'].value, 2);
+            assert.include(data.allKeys[0]['ziplist_doesnt_compress'].value, 'aj2410');
+            assert.include(data.allKeys[0]['ziplist_doesnt_compress'].value, 'cc953a17a8e096e76a44169ad3f9ac87c5f8248a403274416179aa9fbd852344');
+            done();
+        })
+    });
+
     // TO DO:
     //   * expiry in seconds
     //   * explicity testing different file format versions
