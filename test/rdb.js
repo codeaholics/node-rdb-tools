@@ -162,6 +162,26 @@ describe('Parser', function() {
         })
     });
 
+    it('should handle 32 bit intsets', function(done) {
+        load('intset_32.rdb', function(data) {
+            assert.lengthOf(data.allKeys[0]['intset_32'].value, 3);
+            assert.include(data.allKeys[0]['intset_32'].value, '2147418110');
+            assert.include(data.allKeys[0]['intset_32'].value, '2147418109');
+            assert.include(data.allKeys[0]['intset_32'].value, '2147418108');
+            done();
+        })
+    });
+
+    it('should handle 64 bit intsets', function(done) {
+        load('intset_64.rdb', function(data) {
+            assert.lengthOf(data.allKeys[0]['intset_64'].value, 3);
+            assert.include(data.allKeys[0]['intset_64'].value, '9223090557583032318');
+            assert.include(data.allKeys[0]['intset_64'].value, '9223090557583032317');
+            assert.include(data.allKeys[0]['intset_64'].value, '9223090557583032316');
+            done();
+        })
+    });
+
     // TO DO:
     //   * expiry in seconds
     //   * explicity testing different file format versions
