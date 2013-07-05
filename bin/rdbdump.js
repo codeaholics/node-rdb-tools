@@ -1,5 +1,5 @@
-var RdbParser = require('../rdbp'),
-    parser = new RdbParser(),
+var Parser = require('../rdbp').Parser,
+    parser = new Parser(),
     Writable = require('stream').Writable;
 
 var writable = new Writable({objectMode: true});

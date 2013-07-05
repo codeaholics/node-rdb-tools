@@ -1,4 +1,4 @@
-var RdbParser = require('../rdbp'),
+var Parser = require('../rdbp').Parser,
     assert = require('chai').assert,
     fs = require('fs'),
     Writable = require('stream').Writable,
@@ -220,7 +220,7 @@ function load(database, debug, cb) {
 
     var readStream = fs.createReadStream('test/dumps/' + database);
     var writable = new Writable({objectMode: true});
-    var parser = new RdbParser();
+    var parser = new Parser();
 
     var data = {
         all: [],
