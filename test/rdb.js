@@ -208,7 +208,6 @@ describe('Parser', function() {
     // TO DO:
     //   * expiry in seconds
     //   * explicity testing different file format versions
-    //   * CRC
     //   * sorted set encoding
 })
 
@@ -228,6 +227,7 @@ function load(database, debug, cb) {
         database: [],
         key: [],
         end: [],
+        crc: [],
         allKeys: {}
     };
 
