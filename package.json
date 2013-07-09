@@ -1,22 +1,23 @@
 {
-  "name": "rdbp",
+  "name": "rdb-tools",
   "version": "0.0.1",
-  "description": "Redis RDB parsing tools",
-  "main": "rdbp.js",
+  "description": "Redis RDB parsing, filtering and creating tools",
+  "main": "rdb-tools.js",
   "scripts": {
-    "install": "node-gyp configure && node-gyp build",
-    "test": "NODE_ENV=test mocha -R spec",
-    "coverage": "NODE_ENV=test istanbul cover _mocha -- -R spec"
+    "install": "node-gyp configure build",
+    "test": "NODE_ENV=test mocha",
+    "coverage": "NODE_ENV=test istanbul cover _mocha"
   },
-  "repository": "https://github.com/codeaholics/rdbp.git",
+  "repository": "https://github.com/codeaholics/rdb-tools.git",
   "keywords": [
     "Redis",
-    "RDB"
+    "RDB",
+    "Parser"
   ],
   "author": "Danny Yates",
   "license": "BSD",
   "dependencies": {
-    "stream-parser": "git+https://github.com/TooTallNate/node-stream-parser.git#v0.1.0",
+    "stream-parser": "~0.1.0",
     "lzf": "~0.1.3",
     "int64-native": "git+https://github.com/codeaholics/node-int64-native.git#master",
     "buffer-equal": "0.0.0"

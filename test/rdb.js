@@ -1,4 +1,4 @@
-var Parser = require('../rdbp').Parser,
+var Parser = require('../rdb-tools').Parser,
     assert = require('chai').assert,
     fs = require('fs'),
     Writable = require('stream').Writable,

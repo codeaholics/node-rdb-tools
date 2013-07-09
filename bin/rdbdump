@@ -1,4 +1,4 @@
-var Parser = require('../rdbp').Parser,
+var Parser = require('../rdb-tools').Parser,
     parser = new Parser(),
     Writable = require('stream').Writable;
 
