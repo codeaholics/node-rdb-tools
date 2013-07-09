@@ -169,7 +169,10 @@ Redis has a configuration option to disable the CRC (`rdbchecksum no`). If CRC i
 
 ## Known Issues
 
-There are some. I need to remember what they all are!
+*   Doesn't support binary keys/values and likely never will. Get in touch if you REALLY need this...
+*   Can't represent key expiries much beyond the year 275760. But if it could, you wouldn't be able to pass them to `Date()` ;-)
+*   Doesn't support one of the possible encodings of sorted sets (see to do list, below).
+*   If the file is truncated at just the right spot (between records), the parser will hang. The cause of this lies in an external library and is being investigated.
 
 ## To do
 
