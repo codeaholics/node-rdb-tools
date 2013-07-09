@@ -65,7 +65,7 @@ var parser = new Parser(options);
 
 ## File formats
 
-Redis RDB files come in a number of formats. [Sripathi Krishnan](https://github.com/sripathikrishnan) does an excellent job of documenting the [internal structure](https://github.com/sripathikrishnan/redis-rdb-tools/blob/master/docs/RDB_File_Format.textile) and what the differences are between [different versions](https://github.com/sripathikrishnan/redis-rdb-tools/blob/master/docs/RDB_Version_History.textile).
+Redis RDB files come in a number of formats. [Sripathi Krishnan (@sripathikrishnan)](https://github.com/sripathikrishnan) does an excellent job of documenting the [internal structure](https://github.com/sripathikrishnan/redis-rdb-tools/blob/master/docs/RDB_File_Format.textile) and what the differences are between [different versions](https://github.com/sripathikrishnan/redis-rdb-tools/blob/master/docs/RDB_Version_History.textile).
 
 The parser currently doesn't pay any attention to the version of the file format. It understands (almost) all of the structures that can be found in the file and will handle them appropriately.
 
@@ -173,9 +173,9 @@ There are some. I need to remember what they all are!
 
 ## Acknowledgements
 
-*   @antirez (Salvatore Sanfilippo) for creating Redis - I also used his CRC code for validating the RDB CRC.
-*   @sripathikrishnan (Sripathi Krishnan) for his [redis-rdb-tools](https://github.com/sripathikrishnan/redis-rdb-tools) project which inspired me to create this project. I also used his excellent set of test RDB files.
-*   @TooTallNate (Nathan Rajlich) for his [node-stream-parser](https://github.com/TooTallNate/node-stream-parser) library and for working through some bugs (in code and in my understanding!) with me.
+*   [@antirez](https://github.com/antirez) (Salvatore Sanfilippo) for creating Redis - I also used his CRC code for validating the RDB CRC.
+*   [@sripathikrishnan](https://github.com/sripathikrishnan) (Sripathi Krishnan) for his [redis-rdb-tools](https://github.com/sripathikrishnan/redis-rdb-tools) project which inspired me to create this project. I also used his excellent set of test RDB files.
+*   [@TooTallNate](https://github.com/TooTallNate) (Nathan Rajlich) for his [node-stream-parser](https://github.com/TooTallNate/node-stream-parser) library and for working through some bugs (in code and in my understanding!) with me.
 
 ## License
 
@@ -195,7 +195,7 @@ This software is provided under the [Apache License, Version 2.0](http://www.apa
 >    See the License for the specific language governing permissions and
 >    limitations under the License.
 
-The CRC code is by Salvatore Sanfilippo (@antirez):
+The CRC code is by Salvatore Sanfilippo ([@antirez](https://github.com/antirez)):
 
 > Copyright (c) 2006-2012, Salvatore Sanfilippo
 > All rights reserved.
