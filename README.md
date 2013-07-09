@@ -173,9 +173,9 @@ There are some. I need to remember what they all are!
 
 ## To do
 
-[ ] I don't believe any of the test RDB files have expiries in seconds (verify and create new test if necessary).
-[ ] All of the test RDBs claim to be version 3, even though many of them use features from later versions. Explicitly test later formats if possible.
-[ ] Sorted Set encoding is [not documented](https://github.com/sripathikrishnan/redis-rdb-tools/wiki/Redis-RDB-Dump-File-Format#sorted-set-encoding) and none of the test RDBs appear to use it. Is it obsoleted by more recent encodings for sorted sets?
+- [ ] I don't believe any of the test RDB files have expiries in seconds (verify and create new test if necessary).
+- [ ] All of the test RDBs claim to be version 3, even though many of them use features from later versions. Explicitly test later formats if possible.
+- [ ] Sorted Set encoding is [not documented](https://github.com/sripathikrishnan/redis-rdb-tools/wiki/Redis-RDB-Dump-File-Format#sorted-set-encoding) and none of the test RDBs appear to use it. Is it obsoleted by more recent encodings for sorted sets?
 
 ## Acknowledgements
 
