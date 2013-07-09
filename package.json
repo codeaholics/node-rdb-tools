@@ -1,6 +1,6 @@
 {
   "name": "rdb-tools",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Redis RDB parsing, filtering and creating tools",
   "author": "Danny Yates <danny@codeaholics.org>",
   "licenses": [{
@@ -13,7 +13,7 @@
     "test": "NODE_ENV=test mocha",
     "coverage": "NODE_ENV=test istanbul cover _mocha"
   },
-  "repository": "https://github.com/codeaholics/rdb-tools.git",
+  "repository": "https://github.com/codeaholics/node-rdb-tools.git",
   "keywords": [
     "Redis",
     "RDB",
