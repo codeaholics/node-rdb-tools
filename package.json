@@ -2,6 +2,11 @@
   "name": "rdb-tools",
   "version": "0.0.1",
   "description": "Redis RDB parsing, filtering and creating tools",
+  "author": "Danny Yates <danny@codeaholics.org>",
+  "licenses": [{
+    "type": "Apache-2.0",
+    "url": "http://www.apache.org/licenses/LICENSE-2.0"
+  }],
   "main": "rdb-tools.js",
   "scripts": {
     "install": "node-gyp configure build",
@@ -14,8 +19,6 @@
     "RDB",
     "Parser"
   ],
-  "author": "Danny Yates",
-  "license": "BSD",
   "dependencies": {
     "stream-parser": "~0.1.0",
     "lzf": "~0.1.3",
