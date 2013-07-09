@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 var Parser = require('../rdb-tools').Parser,
     parser = new Parser(),
     Writable = require('stream').Writable;
