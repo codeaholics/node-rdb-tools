@@ -218,11 +218,6 @@ describe('Parser', function() {
             done();
         })
     });
-
-    // TO DO:
-    //   * expiry in seconds
-    //   * explicity testing different file format versions
-    //   * sorted set encoding
 })
 
 function load(database, debug, cb) {
