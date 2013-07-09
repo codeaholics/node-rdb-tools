@@ -24,6 +24,7 @@ writable._write = function(chunk, encoding, cb) {
     cb();
 };
 
+// Deal cleanly with stdout suddenly closing (e.g. if piping through 'head')
 process.stdout.on('error', function(err) {
     if (err.code === 'EPIPE') {
         process.exit(0);
