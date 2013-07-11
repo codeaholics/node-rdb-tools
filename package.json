@@ -22,7 +22,7 @@
   "dependencies": {
     "stream-parser": "~0.1.0",
     "lzf": "~0.1.3",
-    "int64-native": "git+https://github.com/codeaholics/node-int64-native.git#master",
+    "int64-native": "~0.2.0",
     "buffer-equal": "0.0.0"
   },
   "devDependencies": {
