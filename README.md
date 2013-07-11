@@ -173,6 +173,7 @@ Redis has a configuration option to disable the CRC (`rdbchecksum no`). If CRC i
 *   Can't represent key expiries much beyond the year 275760. But if it could, you wouldn't be able to pass them to `Date()` ;-)
 *   Doesn't support one of the possible encodings of sorted sets (see to do list, below).
 *   If the file is truncated at just the right spot (between records), the parser will hang. The cause of this lies in an external library and is being investigated.
+*   I suspect there are endianness issues on big endian hardware (particularly around my wrapping of the CRC code), but I don't have access to any to test!
 
 ## To do
 
