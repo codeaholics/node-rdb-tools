@@ -50,6 +50,9 @@ describe('Parser', function() {
             assert.equal(data.allKeys[0][125].value, 'Positive 8 bit integer');
             assert.equal(data.allKeys[0][0xABAB].value, 'Positive 16 bit integer');
             assert.equal(data.allKeys[0][0x0AEDD325].value, 'Positive 32 bit integer');
+            assert.equal(data.allKeys[0][125].rtype, 'string');
+            assert.equal(data.allKeys[0][0xABAB].rtype, 'string');
+            assert.equal(data.allKeys[0][0x0AEDD325].rtype, 'string');
             done();
         })
     });
@@ -59,6 +62,9 @@ describe('Parser', function() {
             assert.equal(data.allKeys[0][-123].value, 'Negative 8 bit integer');
             assert.equal(data.allKeys[0][-0x7325].value, 'Negative 16 bit integer');
             assert.equal(data.allKeys[0][-0x0AEDD325].value, 'Negative 32 bit integer');
+            assert.equal(data.allKeys[0][-123].rtype, 'string');
+            assert.equal(data.allKeys[0][-0x7325].rtype, 'string');
+            assert.equal(data.allKeys[0][-0x0AEDD325].rtype, 'string');
             done();
         })
     });
@@ -69,6 +75,7 @@ describe('Parser', function() {
                       'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa';
 
             assert.equal(data.allKeys[0][key].value, 'Key that redis should compress easily');
+            assert.equal(data.allKeys[0][key].rtype, 'string');
             done();
         })
     });
@@ -78,6 +85,7 @@ describe('Parser', function() {
             assert.equal(data.allKeys[0]['zipmap_compresses_easily'].value['a'], 'aa');
             assert.equal(data.allKeys[0]['zipmap_compresses_easily'].value['aa'], 'aaaa');
             assert.equal(data.allKeys[0]['zipmap_compresses_easily'].value['aaaaa'], 'aaaaaaaaaaaaaa');
+            assert.equal(data.allKeys[0]['zipmap_compresses_easily'].rtype, 'hash');
             done();
         })
     });
@@ -86,6 +94,7 @@ describe('Parser', function() {
         load('zipmap_that_doesnt_compress.rdb', function(data) {
             assert.equal(data.allKeys[0]['zimap_doesnt_compress'].value['MKD1G6'], 2);
             assert.equal(data.allKeys[0]['zimap_doesnt_compress'].value['YNNXK'], 'F7TI');
+            assert.equal(data.allKeys[0]['zimap_doesnt_compress'].rtype, 'hash');
             done();
         })
     });
@@ -97,6 +106,7 @@ describe('Parser', function() {
             assert.lengthOf(data.allKeys[0]['zipmap_with_big_values'].value['255bytes'], 255);
             assert.lengthOf(data.allKeys[0]['zipmap_with_big_values'].value['300bytes'], 300);
             assert.lengthOf(data.allKeys[0]['zipmap_with_big_values'].value['20kbytes'], 20000);
+            assert.equal(data.allKeys[0]['zipmap_with_big_values'].rtype, 'hash');
             done();
         })
     });
@@ -106,6 +116,7 @@ describe('Parser', function() {
             assert.equal(data.allKeys[0]['zipmap_compresses_easily'].value['a'], 'aa');
             assert.equal(data.allKeys[0]['zipmap_compresses_easily'].value['aa'], 'aaaa');
             assert.equal(data.allKeys[0]['zipmap_compresses_easily'].value['aaaaa'], 'aaaaaaaaaaaaaa');
+            assert.equal(data.allKeys[0]['zipmap_compresses_easily'].rtype, 'hash');
             done();
         })
     });
@@ -115,6 +126,7 @@ describe('Parser', function() {
             assert.lengthOf(_.keys(data.allKeys[0]['force_dictionary'].value), 1000);
             assert.equal(data.allKeys[0]['force_dictionary'].value['ZMU5WEJDG7KU89AOG5LJT6K7HMNB3DEI43M6EYTJ83VRJ6XNXQ'], 'T63SOS8DQJF0Q0VJEZ0D1IQFCYTIPSBOUIAI9SB0OV57MQR1FI');
             assert.equal(data.allKeys[0]['force_dictionary'].value['UHS5ESW4HLK8XOGTM39IK1SJEUGVV9WOPK6JYA5QBZSJU84491'], '6VULTCV52FXJ8MGVSFTZVAGK2JXZMGQ5F8OVJI0X6GEDDR27RZ');
+            assert.equal(data.allKeys[0]['force_dictionary'].rtype, 'hash');
             done();
         })
     });
@@ -128,6 +140,7 @@ describe('Parser', function() {
             assert.equal(data.allKeys[0]['ziplist_compresses_easily'].value[3], 'aaaaaaaaaaaaaaaaaaaaaaaa');
             assert.equal(data.allKeys[0]['ziplist_compresses_easily'].value[4], 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
             assert.equal(data.allKeys[0]['ziplist_compresses_easily'].value[5], 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa');
+            assert.equal(data.allKeys[0]['ziplist_compresses_easily'].rtype, 'list');
             done();
         })
     });
@@ -137,6 +150,7 @@ describe('Parser', function() {
             assert.lengthOf(data.allKeys[0]['ziplist_doesnt_compress'].value, 2);
             assert.include(data.allKeys[0]['ziplist_doesnt_compress'].value, 'aj2410');
             assert.include(data.allKeys[0]['ziplist_doesnt_compress'].value, 'cc953a17a8e096e76a44169ad3f9ac87c5f8248a403274416179aa9fbd852344');
+            assert.equal(data.allKeys[0]['ziplist_doesnt_compress'].rtype, 'list');
             done();
         })
     });
@@ -152,6 +166,7 @@ describe('Parser', function() {
             _.each(expected, function(e) {
                 assert.include(data.allKeys[0]['ziplist_with_integers'].value, e);
             });
+            assert.equal(data.allKeys[0]['ziplist_with_integers'].rtype, 'list');
 
             done();
         })
@@ -162,6 +177,7 @@ describe('Parser', function() {
             assert.lengthOf(data.allKeys[0]['force_linkedlist'].value, 1000);
             assert.include(data.allKeys[0]['force_linkedlist'].value, 'JYY4GIFI0ETHKP4VAJF5333082J4R1UPNPLE329YT0EYPGHSJQ');
             assert.include(data.allKeys[0]['force_linkedlist'].value, 'TKBXHJOX9Q99ICF4V78XTCA2Y1UYW6ERL35JCIL1O0KSGXS58S');
+            assert.equal(data.allKeys[0]['force_linkedlist'].rtype, 'list');
             done();
         })
     });
@@ -172,6 +188,7 @@ describe('Parser', function() {
             assert.include(data.allKeys[0]['intset_16'].value, '32766');
             assert.include(data.allKeys[0]['intset_16'].value, '32765');
             assert.include(data.allKeys[0]['intset_16'].value, '32764');
+            assert.equal(data.allKeys[0]['intset_16'].rtype, 'set');
             done();
         })
     });
@@ -182,6 +199,7 @@ describe('Parser', function() {
             assert.include(data.allKeys[0]['intset_32'].value, '2147418110');
             assert.include(data.allKeys[0]['intset_32'].value, '2147418109');
             assert.include(data.allKeys[0]['intset_32'].value, '2147418108');
+            assert.equal(data.allKeys[0]['intset_32'].rtype, 'set');
             done();
         })
     });
@@ -192,6 +210,7 @@ describe('Parser', function() {
             assert.include(data.allKeys[0]['intset_64'].value, '9223090557583032318');
             assert.include(data.allKeys[0]['intset_64'].value, '9223090557583032317');
             assert.include(data.allKeys[0]['intset_64'].value, '9223090557583032316');
+            assert.equal(data.allKeys[0]['intset_64'].rtype, 'set');
             done();
         })
     });
@@ -205,6 +224,7 @@ describe('Parser', function() {
             assert.include(data.allKeys[0]['regular_set'].value, 'delta');
             assert.include(data.allKeys[0]['regular_set'].value, 'phi');
             assert.include(data.allKeys[0]['regular_set'].value, 'kappa');
+            assert.equal(data.allKeys[0]['regular_set'].rtype, 'set');
             done();
         })
     });
@@ -215,6 +235,7 @@ describe('Parser', function() {
             assert.equal(data.allKeys[0]['sorted_set_as_ziplist'].value['8b6ba6718a786daefa69438148361901'], '1');
             assert.equal(data.allKeys[0]['sorted_set_as_ziplist'].value['cb7a24bb7528f934b841b34c3a73e0c7'], '2.3700000000000001');
             assert.equal(data.allKeys[0]['sorted_set_as_ziplist'].value['523af537946b79c4f8369ed39ba78605'], '3.423');
+            assert.equal(data.allKeys[0]['sorted_set_as_ziplist'].rtype, 'zset');
             done();
         })
     });

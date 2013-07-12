@@ -102,12 +102,15 @@ This is the primary output of the parser. One key record is produced for each ke
 ```javascript
 {
     type: 'key',
+    rtype: <redis type>
     database: <database number>,
     key: <string>,
     expiry: <number or undefined>,
     value: <see below>
 }
 ```
+
+`rtype` contains the underlying Redis datatype and is one of: `string`, `list`, `set`, `zset` or `hash`
 
 `value` can have the following types depending on the underlying Redis datastructure:
 
