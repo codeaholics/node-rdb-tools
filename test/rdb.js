@@ -239,6 +239,16 @@ describe('Parser', function() {
             done();
         })
     });
+
+    it('should handle simple sorted sets', function(done) {
+        load('sorted_set.rdb', function(data) {
+            assert.lengthOf(_.keys(data.allKeys[0]['abc'].value), 2);
+            assert.equal(data.allKeys[0]['abc'].value['def'], '1.2');
+            assert.equal(data.allKeys[0]['abc'].value['ghi'], '1.7649999999999999');
+            assert.equal(data.allKeys[0]['abc'].rtype, 'zset');
+            done();
+        })
+    })
 })
 
 function load(database, debug, cb) {
