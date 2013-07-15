@@ -248,7 +248,7 @@ describe('Parser', function() {
             assert.equal(data.allKeys[0]['abc'].rtype, 'zset');
             done();
         })
-    })
+    });
 
     it('should report errors', function(done) {
         var complete = function() {
@@ -261,7 +261,15 @@ describe('Parser', function() {
         }
 
         load('error_reporting.rdb', complete, err);
-    })
+    });
+
+    it('should handle empty strings', function(done) {
+        load('empty_string.rdb', function(data) {
+            assert.equal(data.allKeys[0][''].value, 'abc');
+            assert.equal(data.allKeys[0][''].rtype, 'string');
+            done();
+        })
+    });
 })
 
 function load(database, cb, errback) {
