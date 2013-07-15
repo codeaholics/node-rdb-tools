@@ -249,14 +249,22 @@ describe('Parser', function() {
             done();
         })
     })
+
+    it('should report errors', function(done) {
+        var complete = function() {
+            assert.fail('completed ok', 'error event should have been raised');
+        }
+
+        var err = function(e) {
+            assert.match(e.message, /offset 11/);
+            done();
+        }
+
+        load('error_reporting.rdb', complete, err);
+    })
 })
 
-function load(database, debug, cb) {
-    if (!cb) {
-        cb = debug;
-        debug = false;
-    }
-
+function load(database, cb, errback) {
     var readStream = fs.createReadStream('test/dumps/' + database);
     var writable = new Writable({objectMode: true});
     var parser = new Parser();
@@ -272,11 +280,6 @@ function load(database, debug, cb) {
     };
 
     writable._write = function(chunk, encoding, cb) {
-        if (debug) {
-            // console.log(chunk);
-            // if (chunk.key) console.log(typeof(chunk.key));
-        }
-
         data.all.push(chunk);
         data[chunk.type].push(chunk);
 
@@ -292,6 +295,10 @@ function load(database, debug, cb) {
     writable.on('finish', function() {
         cb(data);
     });
+
+    if (errback) {
+        parser.on('error', errback);
+    }
 
     readStream.pipe(parser).pipe(writable);
 }
