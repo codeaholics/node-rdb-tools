@@ -256,7 +256,7 @@ describe('Parser', function() {
         }
 
         var err = function(e) {
-            assert.match(e.message, /offset 11/);
+            assert.match(e.message, /offset 48/);
             done();
         }
 
