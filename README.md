@@ -73,6 +73,10 @@ The parser currently doesn't pay any attention to the version of the file format
 
 As mentioned above, the parser produces objects as its output. The following objects are produced:
 
+### Events
+
+The parser emits an `error` event when it detects a problem with the RDB file.
+
 ### Header
 
 This object is produced when the "magic header" at the beginning of the file is parsed. It is of little use to downstream components, but is provided for completeness and in anticipation of creating an RDB writer component.
@@ -80,18 +84,20 @@ This object is produced when the "magic header" at the beginning of the file is 
 ```javascript
 {
     type: 'header',
-    version: <version number - typically 6 for modern Redis installs>
+    version: <version number - typically 6 for modern Redis installs>,
+    offset: <byte offset where this record begins in the stream>
 }
 ```
 
 ### Database
 
-This object is produced when a "database" record is found. This indicates that any subsequent keys belong to the given database. This object can be produced multiple times in the following sequence: `database: 0` `key-value` `key-value` `key-value` `database:1` `key-value` `key-value`, etc. Downstream components have little use for this object because the subsequent key objects also carry the database information.
+This object is produced when a "database" record is found. This indicates that any subsequent keys belong to the given database. This object can be produced multiple times in the following sequence: `database: 0`, `key-value`, `key-value`, `key-value`, `database:1`, `key-value`, `key-value`, etc. Downstream components have little use for this object because the subsequent key objects also carry the database information.
 
 ```javascript
 {
     type: 'database',
-    database: <database number - typically 0-15>
+    database: <database number - typically 0-15>,
+    offset: <byte offset where this record begins in the stream>
 }
 ```
 
@@ -106,7 +112,8 @@ This is the primary output of the parser. One key record is produced for each ke
     database: <database number>,
     key: <string>,
     expiry: <number or undefined>,
-    value: <see below>
+    value: <see below>,
+    offset: <byte offset where this record begins in the stream>
 }
 ```
 
@@ -154,7 +161,8 @@ This object represents the end of the file (almost... a CRC may follow). It is o
 
 ```javascript
 {
-    type: 'end'
+    type: 'end',
+    offset: <byte offset where this record begins in the stream>
 }
 ```
 
@@ -164,7 +172,8 @@ Some versions of the RDB file format can contain a CRC checksum at the end of th
 
 ```javascript
 {
-    type: 'crc'
+    type: 'crc',
+    offset: <byte offset where this record begins in the stream>
 }
 ```
 
