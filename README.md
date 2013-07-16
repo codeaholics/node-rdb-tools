@@ -4,11 +4,15 @@
 
 [![Build Status](https://travis-ci.org/codeaholics/node-rdb-tools.png?branch=master)](https://travis-ci.org/codeaholics/node-rdb-tools)
 
-This module currently provides a parser which understands Redis RDB files. In future it will also provide tools for modifying those files and re-creating them.
+This module currently provides:
 
-This parser is perfect for situations where you want to do analysis on your Redis data, but don't want to do it online on the server. Typically, if you have a Redis instance with many millions of keys, then doing a `keys *` or similar will block your server for a long time. In cases like these, taking a recent dump (or forcing a current one with `BGSAVE`) and then analysing that file offline is a useful technique.
+*   an [RDB parser](#parser) - a "streams2" [transformer](http://nodejs.org/api/stream.html#stream_class_stream_transform) which understands Redis RDB files and produces objects representing the keys and values
+*   a ["protocol emitter"](#protocol-emitter) - a transformer which takes arrays of Redis commands and produces raw Redis network protocol
 
-The parser works as a Node "streams2" [transformer](http://nodejs.org/api/stream.html#stream_class_stream_transform). You feed it a stream of bytes (typically from `process.stdin` or a [file read stream](http://nodejs.org/api/fs.html#fs_fs_createreadstream_path_options)), and it produces a stream of objects representing your keys and values (and other miscellaneous structural information about the file).
+In future it will also provide tools for modify and re-creating RDB files - for example deleting keys, moving keys to different spaces, merging/splitting RDB files, etc.
+
+These tools are perfect for situations where you want to do analysis on your Redis data, but don't want to do it online on the server. Typically, if you have a Redis instance with many millions of keys, then doing a `keys *` or similar will block your server for a long time. In cases like these, taking a recent dump (or forcing a current one with `BGSAVE`) and then analysing that file offline is a useful technique.
+file).
 
 ## Installation
 
@@ -53,7 +57,11 @@ In this example, you can see we take `stdin`, pipe it through the parser and pip
 
 On my laptop (a Lenovo X1 Carbon running Ubuntu 12.10 with a `Intel(R) Core(TM) i7-3667U CPU @ 2.00GHz` CPU), I can chew through around 20,000 - 25,000 keys per second. This performance is dependent on the types of data in your file. For example, keys with simple string values are much faster to parse than keys with large composite data structures (hashes, lists, sets, sorted sets). My laptop also has an SSD, so I'm not disk-bound, but I doubt disk speed is going to be an issue.
 
-## Constructor options
+## Parser
+
+The parser works as a Node "streams2" transformer. You feed it a stream of bytes (typically from `process.stdin` or a [file read stream](http://nodejs.org/api/fs.html#fs_fs_createreadstream_path_options)), and it produces a stream of objects representing your keys and values (and other miscellaneous structural information about the
+
+### Constructor options
 
 ```javascript
 var parser = new Parser(options);
@@ -63,21 +71,21 @@ var parser = new Parser(options);
 
 *   `encoding`: the character encoding to use when converting to and from `String` (see below). Defaults to `utf8`.
 
-## File formats
+### File formats
 
 Redis RDB files come in a number of formats. [Sripathi Krishnan (@sripathikrishnan)](https://github.com/sripathikrishnan) does an excellent job of documenting the [internal structure](https://github.com/sripathikrishnan/redis-rdb-tools/blob/master/docs/RDB_File_Format.textile) and what the differences are between [different versions](https://github.com/sripathikrishnan/redis-rdb-tools/blob/master/docs/RDB_Version_History.textile).
 
 The parser currently doesn't pay any attention to the version of the file format. It understands (almost) all of the structures that can be found in the file and will handle them appropriately.
 
-## Output
+### Output
 
 As mentioned above, the parser produces objects as its output. The following objects are produced:
 
-### Events
+#### Events
 
 The parser emits an `error` event when it detects a problem with the RDB file.
 
-### Header
+#### Header
 
 This object is produced when the "magic header" at the beginning of the file is parsed. It is of little use to downstream components, but is provided for completeness and in anticipation of creating an RDB writer component.
 
@@ -89,7 +97,7 @@ This object is produced when the "magic header" at the beginning of the file is 
 }
 ```
 
-### Database
+#### Database
 
 This object is produced when a "database" record is found. This indicates that any subsequent keys belong to the given database. This object can be produced multiple times in the following sequence: `database: 0`, `key-value`, `key-value`, `key-value`, `database:1`, `key-value`, `key-value`, etc. Downstream components have little use for this object because the subsequent key objects also carry the database information.
 
@@ -101,7 +109,7 @@ This object is produced when a "database" record is found. This indicates that a
 }
 ```
 
-### Key
+#### Key
 
 This is the primary output of the parser. One key record is produced for each key-value pair found in the store.
 
@@ -126,7 +134,7 @@ This is the primary output of the parser. One key record is produced for each ke
 *   Hashes are `Objects` whose keys and values map to the keys and values of the Redis hash
 *   Sorted sets (zsets) are `Objects` whose keys are the sorted set keys and whose values are the scores
 
-#### String interpretation
+##### String interpretation
 
 Redis keys and values are "binary safe". This means that Redis treats them as just arrays of bytes and places no further interpretation on them - in particular it doesn't attempt to interpret them as strings with particular character encodings. (This isn't quite true, as Redis does understand keys and values which consist wholly of the ASCII characters '0'-'9' as in encodes them specially in RDB files and provides commands such as `INCR` and `HINCRBY` which understand the semantics of numeric values. But let's move on...)
 
@@ -141,7 +149,7 @@ The parser uses the character encoding specified on construction (default `utf8`
 
 In this way, the parser presents a consistent view of the Redis store - all primitives are `Strings`.
 
-#### Expiry magic
+##### Expiry magic
 
 RDB files have two different encodings of key expiry - either seconds or milliseconds since ["Unix epoch"](http://en.wikipedia.org/wiki/Unix_epoch).
 
@@ -178,6 +186,30 @@ Some versions of the RDB file format can contain a CRC checksum at the end of th
 ```
 
 Redis has a configuration option to disable the CRC (`rdbchecksum no`). If CRC is disabled, this object will still be produced.
+
+## Protocol Emitter
+
+The protocol emitter is a streams2 transformer. It takes arrays representing Redis commands as input and produces raw Redis network protocol as output. The output is suitable for piping into `redis-cli --pipe`.
+
+### Constructor options
+
+```javascript
+var protocolEmitter = new ProtocolEmitter(options);
+```
+
+`options` is an object with the following:
+
+*   `encoding`: the character encoding to use when converting the Redis commands from `String` to network protocol bytes. Defaults to `utf8`.
+
+### Input
+
+Feed the emitter arrays which look like this:
+
+```javascript
+['HINCRBY', 'user:1234', 'failedLogins', '1']
+['SET', 'status', 'running']
+['ZINCRBY', 'popular', '1', 'https://github.com/codeaholics/node-rdb-tools']
+```
 
 ## Known Issues
 
