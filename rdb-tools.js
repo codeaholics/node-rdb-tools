@@ -13,5 +13,6 @@
 //    limitations under the License.
 
 exports = module.exports = {
-    Parser: require('./lib/parser')
+    Parser: require('./lib/parser'),
+    ProtocolEmitter: require('./lib/protocol-emitter')
 }
