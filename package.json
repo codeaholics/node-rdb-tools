@@ -3,10 +3,12 @@
   "version": "0.0.6",
   "description": "Redis RDB parsing, filtering and creating tools",
   "author": "Danny Yates <danny@codeaholics.org>",
-  "licenses": [{
-    "type": "Apache-2.0",
-    "url": "http://www.apache.org/licenses/LICENSE-2.0"
-  }],
+  "licenses": [
+    {
+      "type": "Apache-2.0",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0"
+    }
+  ],
   "main": "rdb-tools.js",
   "scripts": {
     "install": "node-gyp configure build",
@@ -29,7 +31,8 @@
     "mocha": "~1.11.0",
     "chai": "~1.7.2",
     "underscore": "~1.4.4",
-    "istanbul": "~0.1.40"
+    "istanbul": "~0.1.40",
+    "bl": "~0.1.1"
   },
   "bin": {
     "rdbdump": "./bin/rdbdump"
