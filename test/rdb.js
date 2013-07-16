@@ -252,11 +252,11 @@ describe('Parser', function() {
 
     it('should report errors', function(done) {
         var complete = function() {
-            assert.fail('completed ok', 'error event should have been raised');
+            throw new Error('parsing completed ok but an error event should have been raised');
         }
 
         var err = function(e) {
-            assert.match(e.message, /offset 11/);
+            assert.match(e.message, /offset 48/);
             done();
         }
 
