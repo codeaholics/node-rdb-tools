@@ -248,20 +248,28 @@ describe('Parser', function() {
             assert.equal(data.allKeys[0]['abc'].rtype, 'zset');
             done();
         })
-    })
+    });
 
     it('should report errors', function(done) {
         var complete = function() {
-            assert.fail('completed ok', 'error event should have been raised');
+            throw new Error('parsing completed ok but an error event should have been raised');
         }
 
         var err = function(e) {
-            assert.match(e.message, /offset 11/);
+            assert.match(e.message, /offset 48/);
             done();
         }
 
         load('error_reporting.rdb', complete, err);
-    })
+    });
+
+    it('should handle empty strings', function(done) {
+        load('empty_string.rdb', function(data) {
+            assert.equal(data.allKeys[0][''].value, 'abc');
+            assert.equal(data.allKeys[0][''].rtype, 'string');
+            done();
+        })
+    });
 })
 
 function load(database, cb, errback) {
