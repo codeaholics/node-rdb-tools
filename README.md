@@ -12,7 +12,6 @@ This module currently provides:
 In future it will also provide tools for modify and re-creating RDB files - for example deleting keys, moving keys to different spaces, merging/splitting RDB files, etc.
 
 These tools are perfect for situations where you want to do analysis on your Redis data, but don't want to do it online on the server. Typically, if you have a Redis instance with many millions of keys, then doing a `keys *` or similar will block your server for a long time. In cases like these, taking a recent dump (or forcing a current one with `BGSAVE`) and then analysing that file offline is a useful technique.
-file).
 
 ## Installation
 
@@ -59,7 +58,7 @@ On my laptop (a Lenovo X1 Carbon running Ubuntu 12.10 with a `Intel(R) Core(TM) 
 
 ## Parser
 
-The parser works as a Node "streams2" transformer. You feed it a stream of bytes (typically from `process.stdin` or a [file read stream](http://nodejs.org/api/fs.html#fs_fs_createreadstream_path_options)), and it produces a stream of objects representing your keys and values (and other miscellaneous structural information about the
+The parser works as a Node "streams2" transformer. You feed it a stream of bytes (typically from `process.stdin` or a [file read stream](http://nodejs.org/api/fs.html#fs_fs_createreadstream_path_options)), and it produces a stream of objects representing your keys and values (and other miscellaneous structural information about the file).
 
 ### Constructor options
 
