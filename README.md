@@ -9,7 +9,7 @@ This module currently provides:
 *   an [RDB parser](#parser) - a "streams2" [transformer](http://nodejs.org/api/stream.html#stream_class_stream_transform) which understands Redis RDB files and produces objects representing the keys and values
 *   a ["protocol emitter"](#protocol-emitter) - a transformer which takes arrays of Redis commands and produces raw Redis network protocol
 
-In future it will also provide tools for modify and re-creating RDB files - for example deleting keys, moving keys to different spaces, merging/splitting RDB files, etc.
+In future it will also provide tools for modifying and re-creating RDB files - for example deleting keys, moving keys to different spaces, merging/splitting RDB files, etc.
 
 These tools are perfect for situations where you want to do analysis on your Redis data, but don't want to do it online on the server. Typically, if you have a Redis instance with many millions of keys, then doing a `keys *` or similar will block your server for a long time. In cases like these, taking a recent dump (or forcing a current one with `BGSAVE`) and then analysing that file offline is a useful technique.
 
