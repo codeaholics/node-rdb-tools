@@ -103,7 +103,7 @@ This object is produced when a "database" record is found. This indicates that a
 ```javascript
 {
     type: 'database',
-    database: <database number - typically 0-15>,
+    number: <database number - typically 0-15>,
     offset: <byte offset where this record begins in the stream>
 }
 ```
