@@ -22,38 +22,23 @@ var Parser = require('../rdb-tools').Parser,
 
 describe('Writer', function() {
     describe('should round-trip all parser test files', function() {
-        _.each(fs.readdirSync('test/dumps'), function(f, i) {
-            if (['empty_database.rdb',
-                 'multiple_databases.rdb',
-                 'keys_with_expiry.rdb',
-                 'integer_keys.rdb',
-                 'easily_compressible_string_key.rdb',
-                 'zipmap_that_compresses_easily.rdb',
-                 'zipmap_that_doesnt_compress.rdb',
-                 'zipmap_with_big_values.rdb',
-                 'hash_as_ziplist.rdb',
-                 'dictionary.rdb',
-                 'ziplist_that_compresses_easily.rdb',
-                 'ziplist_that_doesnt_compress.rdb',
-                 'ziplist_with_integers.rdb',
-                 'linkedlist.rdb',
-                 'intset_16.rdb',
-                 'intset_32.rdb',
-                 'intset_64.rdb',
-                 'regular_set.rdb',
-                 'sorted_set_as_ziplist.rdb',
-                 'sorted_set.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
+        _.each(fs.readdirSync('test/dumps'), function(f) {
+            if (!f.match(/error/)) {
+                it(f, roundTripTest.bind(null, f));
+            }
         });
     });
 
     describe('should fail on unexpected objects', function() {
-        _.each([['buffer', new Buffer(0)],
-                ['string', 'hello world'],
-                ['null', null],
-                ['undefined', undefined],
-                ['object without type', {}],
-                ['wrong type of object', {type: 'database'}]], function(data) {
-            it(data[0], simpleErrorTest.bind(null, data[1]));
+        var tests = [['buffer', new Buffer(0)],
+                     ['string', 'hello world'],
+                     ['null', null],
+                     ['undefined', undefined],
+                     ['object without type', {}],
+                     ['wrong type of object', {type: 'database'}]];
+
+        _.each(tests, function(test) {
+            it(test[0], simpleErrorTest.bind(null, test[1]));
         });
     });
 
