@@ -29,7 +29,10 @@ describe('Writer', function() {
                  'integer_keys.rdb',
                  'easily_compressible_string_key.rdb',
                  'zipmap_that_compresses_easily.rdb',
-                 'zipmap_that_doesnt_compress.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
+                 'zipmap_that_doesnt_compress.rdb',
+                 'zipmap_with_big_values.rdb',
+                 'hash_as_ziplist.rdb',
+                 'dictionary.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
         });
     });
 
