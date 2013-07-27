@@ -32,7 +32,11 @@ describe('Writer', function() {
                  'zipmap_that_doesnt_compress.rdb',
                  'zipmap_with_big_values.rdb',
                  'hash_as_ziplist.rdb',
-                 'dictionary.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
+                 'dictionary.rdb',
+                 'ziplist_that_compresses_easily.rdb',
+                 'ziplist_that_doesnt_compress.rdb',
+                 'ziplist_with_integers.rdb',
+                 'linkedlist.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
         });
     });
 
