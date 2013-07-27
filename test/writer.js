@@ -40,7 +40,9 @@ describe('Writer', function() {
                  'intset_16.rdb',
                  'intset_32.rdb',
                  'intset_64.rdb',
-                 'regular_set.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
+                 'regular_set.rdb',
+                 'sorted_set_as_ziplist.rdb',
+                 'sorted_set.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
         });
     });
 
