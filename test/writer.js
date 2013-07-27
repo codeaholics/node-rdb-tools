@@ -24,7 +24,10 @@ describe('Writer', function() {
     describe('should round-trip all parser test files', function() {
         _.each(fs.readdirSync('test/dumps'), function(f) {
             if (!f.match(/error/)) {
-                it(f, roundTripTest.bind(null, f));
+                it(f, function(done) {
+                    this.test.slow(125);
+                    roundTripTest(f, done);
+                });
             }
         });
     });
