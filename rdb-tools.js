@@ -14,5 +14,6 @@
 
 exports = module.exports = {
     Parser: require('./lib/parser'),
+    Writer: require('./lib/writer'),
     ProtocolEmitter: require('./lib/protocol-emitter')
 }
