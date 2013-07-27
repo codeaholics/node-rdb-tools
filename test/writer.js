@@ -25,7 +25,8 @@ describe('Writer', function() {
         _.each(fs.readdirSync('test/dumps'), function(f, i) {
             if (['empty_database.rdb',
                  'multiple_databases.rdb',
-                 'keys_with_expiry.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
+                 'keys_with_expiry.rdb',
+                 'integer_keys.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
         });
     });
 
