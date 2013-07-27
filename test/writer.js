@@ -23,7 +23,9 @@ var Parser = require('../rdb-tools').Parser,
 describe('Writer', function() {
     describe('should round-trip', function() {
         _.each(fs.readdirSync('test/dumps'), function(f, i) {
-            if (['empty_database.rdb', 'multiple_databases.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
+            if (['empty_database.rdb',
+                 'multiple_databases.rdb',
+                 'keys_with_expiry.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
         });
     });
 
