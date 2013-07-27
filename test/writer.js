@@ -23,12 +23,35 @@ var Parser = require('../rdb-tools').Parser,
 describe('Writer', function() {
     describe('should round-trip', function() {
         _.each(fs.readdirSync('test/dumps'), function(f) {
-           it(f, roundTrip.bind(null, f));
+           it.skip(f, roundTripTest.bind(null, f));
         });
-    })
+    });
+
+    describe('should fail on unexpected objects', function() {
+        _.each([['buffer', new Buffer(0)],
+                ['string', 'hello world'],
+                ['null', null],
+                ['undefined', undefined],
+                ['object without type', {}]], function(data) {
+            it(data[0], simpleErrorTest.bind(null, data[1]));
+        });
+    });
+
+    it.skip('should handle UTF-8');
 });
 
-function roundTrip(f, done) {
+function simpleErrorTest(obj, done) {
+    var writer = new Writer();
+
+    writer.on('error', function(e) {
+        assert.match(e.message, /Unexpected object/);
+        done();
+    });
+
+    writer._transform(obj);
+}
+
+function roundTripTest(f, done) {
     var inputStream = fs.createReadStream('test/dumps/' + f),
         parser = new Parser(),
         inputCaptor = new Transform({objectMode: true}),
