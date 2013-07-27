@@ -36,7 +36,11 @@ describe('Writer', function() {
                  'ziplist_that_compresses_easily.rdb',
                  'ziplist_that_doesnt_compress.rdb',
                  'ziplist_with_integers.rdb',
-                 'linkedlist.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
+                 'linkedlist.rdb',
+                 'intset_16.rdb',
+                 'intset_32.rdb',
+                 'intset_64.rdb',
+                 'regular_set.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
         });
     });
 
