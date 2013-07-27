@@ -22,8 +22,8 @@ var Parser = require('../rdb-tools').Parser,
 
 describe('Writer', function() {
     describe('should round-trip', function() {
-        _.each(fs.readdirSync('test/dumps'), function(f) {
-           it.skip(f, roundTripTest.bind(null, f));
+        _.each(fs.readdirSync('test/dumps'), function(f, i) {
+            if (['empty_database.rdb', 'multiple_databases.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
         });
     });
 
@@ -32,7 +32,8 @@ describe('Writer', function() {
                 ['string', 'hello world'],
                 ['null', null],
                 ['undefined', undefined],
-                ['object without type', {}]], function(data) {
+                ['object without type', {}],
+                ['wrong type of object', {type: 'database'}]], function(data) {
             it(data[0], simpleErrorTest.bind(null, data[1]));
         });
     });
@@ -62,19 +63,21 @@ function roundTripTest(f, done) {
         outputCaptives = [];
 
     inputCaptor._transform = function(obj, encoding, cb) {
+        delete obj.offset;
         inputCaptives.push(obj);
         this.push(obj);
         cb();
     }
 
     outputCaptor._write = function(obj, encoding, cb) {
+        delete obj.offset;
         outputCaptives.push(obj);
         cb();
     }
 
     outputCaptor.on('finish', function() {
-        // TODO: check the input and output captive match
-        done('not yet testing');
+        assert.deepEqual(outputCaptives, inputCaptives);
+        done();
     });
 
     inputStream.pipe(parser).pipe(inputCaptor).pipe(writer).pipe(reparser).pipe(outputCaptor);
