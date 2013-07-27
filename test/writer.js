@@ -26,7 +26,8 @@ describe('Writer', function() {
             if (['empty_database.rdb',
                  'multiple_databases.rdb',
                  'keys_with_expiry.rdb',
-                 'integer_keys.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
+                 'integer_keys.rdb',
+                 'easily_compressible_string_key.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
         });
     });
 
