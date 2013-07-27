@@ -7,9 +7,10 @@
 This module currently provides:
 
 *   an [RDB parser](#parser) - a "streams2" [transformer](http://nodejs.org/api/stream.html#stream_class_stream_transform) which understands Redis RDB files and produces objects representing the keys and values
+*   an [RDB writer](#writer) - a transformer which consumes the objects produced by the [parser](#parser) and produces a Redis RDB file
 *   a ["protocol emitter"](#protocol-emitter) - a transformer which takes arrays of Redis commands and produces raw Redis network protocol
 
-In future it will also provide tools for modifying and re-creating RDB files - for example deleting keys, moving keys to different spaces, merging/splitting RDB files, etc.
+In future it will also provide tools for modifying RDB files - for example deleting keys, moving keys to different spaces, merging/splitting RDB files, etc.
 
 These tools are perfect for situations where you want to do analysis on your Redis data, but don't want to do it online on the server. Typically, if you have a Redis instance with many millions of keys, then doing a `keys *` or similar will block your server for a long time. In cases like these, taking a recent dump (or forcing a current one with `BGSAVE`) and then analysing that file offline is a useful technique.
 
@@ -186,9 +187,60 @@ Some versions of the RDB file format can contain a CRC checksum at the end of th
 
 Redis has a configuration option to disable the CRC (`rdbchecksum no`). If CRC is disabled, this object will still be produced.
 
+## Writer
+
+The writer is also a transformer. If you pass it objects in the form produced by the [parser](#parser), it will produce a byte stream consisting of an RDB file. Probably the best thing to do with this is write it to disk by piping the writer to a [file writer stream](http://nodejs.org/api/fs.html#fs_fs_createwritestream_path_options).
+
+### Constructor options
+
+```javascript
+var writer = new Writer(options);
+```
+
+`options` is an object with the following:
+
+*   `encoding`: the character encoding to use when converting to and from `String` (see the [parser documentation](#string-interpretation)). Defaults to `utf8`.
+*   `compressionThreshold`: how large a given string is before the writer attempts to compress it. Like Redis, this defaults to `4`. When a string is larger than this threshold, the writer will compress it, but only write out the compressed version if it is actually smaller. This is consistent with Redis' behaviour. However, it should be noted that this can consume a large amount of CPU by compressing keys and values and then discarding the compressed versions if your keys and values are small or otherwise not very compressible. You may wish to increase this threshold to improve throughput at the expense of the output RDB size.
+
+### Output
+
+#### File format
+
+The writer currently only produces [version 6](https://github.com/sripathikrishnan/redis-rdb-tools/blob/master/docs/RDB_Version_History.textile#version-6) files. It doesn't, however, use all of the features of this file version. If you have a requirement for older file versions, please raise an issue.
+
+#### Events
+
+The writer emits an `error` event when it detects a problem with its input - for example, objects in the wrong order.
+
+### Input
+
+The writer takes as input the same objects that the parser produces as output. The writer ignores the `offset` field on any input objects as this isn't part of the RDB file format, but is provided by the parser for information/debugging purposes.
+
+#### Header
+
+When it receives a `header` object, the writer writes an RDB header to the output with the same version number as the incoming header object. *Note:* even though the writer emits a header with the same version as the input object, it doesn't adjust any other aspect of its output and still uses structures only found in later versions of the file format. This may change in future. If it causes you problems, please raise an issue.
+
+#### Database
+
+The writer ignores `database` objects. It gets the database information from the key objects and switches between databases as necessary based on that information.
+
+#### Key
+
+`Key` objects are written to the output RDB file stream using only the most simple encoding for each type. This will generally mean that your RDB files are not as compact as they may otherwise be. If this is a problem for you and you need the newer 'zip' encodings, please raise an issue.
+
+#### End
+
+The writer will write an EOF marker into the RDB stream when it receives this object. But remember... that's not the end...
+
+#### CRC
+
+After sending an `end` object, you will need to send a `crc` object. (*Note:* the parser already produces these objects in this order.) When it receives this object it will write out the CRC of the bytes already written.
+
+At this point, the writer will not accept any more objects and will produce an `error` event if any attempt is made to send more objects. The RDB stream is complete at this point and the writer should be finalised in the normal ways - e.g. by calling [`end()`](http://nodejs.org/api/stream.html#stream_writable_end_chunk_encoding_callback) if you're using the writer directly or by closing down the pipeline if you're piping into it.
+
 ## Protocol Emitter
 
-The protocol emitter is a streams2 transformer. It takes arrays representing Redis commands as input and produces raw Redis network protocol as output. The output is suitable for piping into `redis-cli --pipe`.
+The protocol emitter is also transformer. It takes arrays representing Redis commands as input and produces raw Redis network protocol as output. The output is suitable for piping into `redis-cli --pipe`.
 
 ### Constructor options
 
@@ -219,9 +271,10 @@ Feed the emitter arrays which look like this:
 
 ## To do
 
-- [x] I don't believe any of the test RDB files have expiries in seconds (verify and create new test if necessary).
-- [ ] All of the test RDBs claim to be version 3, even though many of them use features from later versions. Explicitly test later formats if possible.
+- [x] <del>I don't believe any of the test RDB files have expiries in seconds (verify and create new test if necessary).</del>
 - [x] <del>Sorted Set encoding is [not documented](https://github.com/sripathikrishnan/redis-rdb-tools/wiki/Redis-RDB-Dump-File-Format#sorted-set-encoding) and none of the test RDBs appear to use it. Is it obsoleted by more recent encodings for sorted sets?</del>
+- [ ] Writer only produces version 6 RDBs. This is probably good enough!
+- [ ] Writer doesn't use any of the more compact 'zip' encodings.
 
 ## Acknowledgements
 
