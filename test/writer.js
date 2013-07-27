@@ -21,13 +21,15 @@ var Parser = require('../rdb-tools').Parser,
     _ = require('underscore');
 
 describe('Writer', function() {
-    describe('should round-trip', function() {
+    describe('should round-trip all parser test files', function() {
         _.each(fs.readdirSync('test/dumps'), function(f, i) {
             if (['empty_database.rdb',
                  'multiple_databases.rdb',
                  'keys_with_expiry.rdb',
                  'integer_keys.rdb',
-                 'easily_compressible_string_key.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
+                 'easily_compressible_string_key.rdb',
+                 'zipmap_that_compresses_easily.rdb',
+                 'zipmap_that_doesnt_compress.rdb'].indexOf(f) != -1) it(f, roundTripTest.bind(null, f));
         });
     });
 
