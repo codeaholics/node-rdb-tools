@@ -270,6 +270,13 @@ describe('Parser', function() {
             done();
         })
     });
+
+    it('should handle keys with second expiries', function(done) {
+        load('keys_with_expiry_secs.rdb', function(data) {
+            assert.equal(data.allKeys[0]['foo'].expiry, 1374939348000);
+            done();
+        })
+    });
 })
 
 function load(database, cb, errback) {
