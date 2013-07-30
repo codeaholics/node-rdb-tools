@@ -8,7 +8,7 @@ This module currently provides:
 
 *   an [RDB parser](#parser) - a "streams2" [transformer](http://nodejs.org/api/stream.html#stream_class_stream_transform) which understands Redis RDB files and produces objects representing the keys and values
 *   an [RDB writer](#writer) - a transformer which consumes the objects produced by the [parser](#parser) and produces a Redis RDB file
-*   a ["protocol emitter"](#protocol-emitter) - a transformer which takes arrays of Redis commands and produces raw Redis network protocol
+*   a ["protocol emitter"](#protocol-emitter) - a transformer which takes arrays of Redis commands and produces raw Redis network protocol suitable for piping into `redis-cli --pipe`
 
 In future it will also provide tools for modifying RDB files - for example deleting keys, moving keys to different spaces, merging/splitting RDB files, etc.
 
