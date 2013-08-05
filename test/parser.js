@@ -277,6 +277,13 @@ describe('Parser', function() {
             done();
         })
     });
+
+    it('should handle UTF-8', function(done) {
+        load('utf8.rdb', function(data) {
+            assert.equal(data.allKeys[0]['\u00A3'].value, '\u00A9');
+            done();
+        })
+    });
 })
 
 function load(database, cb, errback) {

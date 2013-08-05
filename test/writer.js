@@ -18,6 +18,7 @@ var Parser = require('../rdb-tools').Parser,
     fs = require('fs'),
     Writable = require('stream').Writable,
     Transform = require('stream').Transform,
+    BufferList = require('bl'),
     _ = require('underscore');
 
 describe('Writer', function() {
@@ -45,7 +46,36 @@ describe('Writer', function() {
         });
     });
 
-    it.skip('should handle UTF-8');
+    it('should handle UTF-8', function(done) {
+        var writer = new Writer(),
+            bl = new BufferList(function(err, data) {
+                assert.equal(data.get(13), 0xC2);
+                assert.equal(data.get(14), 0xA3);
+                assert.equal(data.get(16), 0xC2);
+                assert.equal(data.get(17), 0xA9);
+                done();
+            });
+
+        writer.pipe(bl);
+
+        writer.write({
+            type: 'header',
+            version: 6
+        });
+
+        writer.write({
+            type: 'database',
+            number: 0
+        });
+
+        writer.end({
+            type: 'key',
+            rtype: 'string',
+            database: 0,
+            key: '\u00A3',
+            value: '\u00A9'
+        });
+    });
 });
 
 function simpleErrorTest(obj, done) {
