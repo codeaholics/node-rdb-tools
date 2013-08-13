@@ -251,16 +251,12 @@ describe('Parser', function() {
     });
 
     it('should report errors', function(done) {
-        var complete = function() {
-            throw new Error('parsing completed ok but an error event should have been raised');
-        }
-
         var err = function(e) {
             assert.match(e.message, /offset 48/);
             done();
         }
 
-        load('error_reporting.rdb', complete, err);
+        load('error_reporting.rdb', null, err);
     });
 
     it('should handle empty strings', function(done) {
@@ -306,20 +302,19 @@ function load(database, cb, errback) {
         data[chunk.type].push(chunk);
 
         if (chunk.type === 'key') {
-            var key = chunk.key.toString();
             if (!data.allKeys[chunk.database]) data.allKeys[chunk.database] = {};
-            data.allKeys[chunk.database][key] = chunk;
+            data.allKeys[chunk.database][chunk.key] = chunk;
         }
 
         cb();
     };
 
-    writable.on('finish', function() {
-        cb(data);
-    });
-
     if (errback) {
         parser.on('error', errback);
+    } else {
+        writable.on('finish', function() {
+            cb(data);
+        });
     }
 
     readStream.pipe(parser).pipe(writable);

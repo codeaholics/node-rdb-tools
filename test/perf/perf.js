@@ -23,7 +23,7 @@ var Parser = require('../../rdb-tools').Parser,
 describe('Performance', function() {
     it('of the Parser', function(done) {
         var parser = new Parser();
-        var timer = createTimer({objectMode: true}, expect(15000, done));
+        var timer = createTimer({objectMode: true}, expect(6000, done));
 
         parser.pipe(timer);
 
