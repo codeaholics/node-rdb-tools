@@ -13,7 +13,8 @@
   "scripts": {
     "install": "node-gyp configure build",
     "test": "NODE_ENV=test mocha",
-    "coverage": "NODE_ENV=test istanbul cover _mocha"
+    "coverage": "NODE_ENV=test istanbul cover _mocha",
+    "perf": "NODE_ENV=test mocha -t 30000 test/perf/perf.js"
   },
   "repository": "https://github.com/codeaholics/node-rdb-tools.git",
   "keywords": [
