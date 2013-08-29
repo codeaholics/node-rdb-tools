@@ -2,7 +2,7 @@
 
 ### Tools for parsing, filtering and creating Redis RDB files
 
-[![Build Status](https://travis-ci.org/codeaholics/node-rdb-tools.png?branch=master)](https://travis-ci.org/codeaholics/node-rdb-tools)
+[![Build Status](https://travis-ci.org/codeaholics/node-rdb-tools.png?branch=master)](https://travis-ci.org/codeaholics/node-rdb-tools) [![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/codeaholics/node-rdb-tools/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
 
 This module currently provides:
 
