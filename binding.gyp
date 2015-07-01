@@ -5,7 +5,10 @@
       "sources": [
         "src/crc-64-jones.c",
         "src/Crc64.cc"
-      ]
+      ],
+      "include_dirs": [
+        "<!(node -e \"require('nan')\")"
+      ],
     }
   ]
 }

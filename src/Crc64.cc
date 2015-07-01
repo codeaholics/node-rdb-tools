@@ -12,75 +12,88 @@
 //    See the License for the specific language governing permissions and
 //    limitations under the License.
 
-#include <node.h>
-#include <v8.h>
-#include <node_buffer.h>
-
-#include "Crc64.h"
+#include "nan.h"
 
 using namespace v8;
 using namespace node;
 
+
 extern "C"
 uint64_t crc64(uint64_t crc, const unsigned char *s, uint64_t l);
 
-void Crc64::Init(Handle<Object> exports) {
-    Local<FunctionTemplate> tpl = FunctionTemplate::New(New);
 
-    tpl->SetClassName(String::NewSymbol("Crc64"));
-    tpl->InstanceTemplate()->SetInternalFieldCount(1);
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("push"), FunctionTemplate::New(Push)->GetFunction());
-    tpl->PrototypeTemplate()->Set(String::NewSymbol("value"), FunctionTemplate::New(GetValue)->GetFunction());
+class Crc64 : public ObjectWrap {
 
-    Persistent<Function> constructor = Persistent<Function>::New(tpl->GetFunction());
-    exports->Set(String::NewSymbol("Crc64"), constructor);
-}
+public:
 
-Crc64::Crc64() {
+  static void Init(Handle<Object> exports) {
+    NanScope();
+    Local<FunctionTemplate> tmpl = NanNew<FunctionTemplate>(Crc64::New);
+
+    tmpl->SetClassName(NanNew("Crc64"));
+    tmpl->InstanceTemplate()->SetInternalFieldCount(1);
+
+    NODE_SET_PROTOTYPE_METHOD(tmpl, "push",  Push);
+    NODE_SET_PROTOTYPE_METHOD(tmpl, "value", GetValue);
+
+    NanAssignPersistent(functionTemplate, tmpl);
+    NanAssignPersistent(constructor, tmpl->GetFunction());
+    exports->Set(NanNew("Crc64"), tmpl->GetFunction());
+  }
+
+private:
+
+  Crc64() {
     crc = 0;
-}
+  }
 
-Crc64::~Crc64() {}
+  ~Crc64() {
+  }
 
-Handle<Value> Crc64::New(const Arguments& args) {
-    if (args.Length() != 0) {
-        return ThrowException(Exception::Error(String::New("Unexpected arguments")));
-    }
+  static NAN_METHOD(New) {
+    NanScope();
+    Crc64* instance = new Crc64();
+    instance->Wrap(args.This());
+    NanReturnThis();
+  }
 
-    HandleScope scope;
-    Crc64* obj = new Crc64();
-    obj->Wrap(args.This());
-    return args.This();
-}
+  static NAN_METHOD(Push) {
+    NanScope();
+    if (args.Length() != 1 || !Buffer::HasInstance(args[0]))
+      return NanThrowError("Expecting a single Buffer argument");
 
-Handle<Value> Crc64::Push(const Arguments& args) {
-    if (args.Length() != 1 || !Buffer::HasInstance(args[0])) {
-        return ThrowException(Exception::Error(String::New("Expecting a single Buffer argument")));
-    }
-
-    HandleScope scope;
-    Crc64* obj = ObjectWrap::Unwrap<Crc64>(args.This());
+    Crc64* instance = ObjectWrap::Unwrap<Crc64>(args.Holder());
     Local<Object> bytes = args[0]->ToObject();
+    instance->crc = crc64(instance->crc, (unsigned char *)Buffer::Data(bytes), Buffer::Length(bytes));
+    NanReturnUndefined();
+  }
 
-    obj->crc = crc64(obj->crc, (unsigned char *)Buffer::Data(bytes), Buffer::Length(bytes));
+  static NAN_METHOD(GetValue) {
+    NanScope();
+    if (args.Length() != 0)
+      return NanThrowError("Unexpected arguments");
 
-    return Undefined();
-}
+    Crc64* instance = ObjectWrap::Unwrap<Crc64>(args.Holder());
+    Local<Object> BufferOut = NanNewBufferHandle((char*)&(instance->crc), sizeof(uint64_t));
+    NanReturnValue(BufferOut);
+  }
 
-Handle<Value> Crc64::GetValue(const Arguments& args) {
-    if (args.Length() != 0) {
-        return ThrowException(Exception::Error(String::New("Unexpected arguments")));
-    }
+  static Persistent<FunctionTemplate> functionTemplate;
+  static Persistent<Function>         constructor;
 
-    HandleScope scope;
-    Crc64* obj = ObjectWrap::Unwrap<Crc64>(args.This());
-    Buffer* BufferOut = Buffer::New((char*)&(obj->crc), sizeof(uint64_t));
-    return scope.Close(BufferOut->handle_);
-}
+  uint64_t crc;
+};
 
-extern "C"
-void init(Handle<Object> exports) {
+
+Persistent<FunctionTemplate> Crc64::functionTemplate;
+Persistent<Function>         Crc64::constructor;
+
+
+extern "C" {
+
+  static void init(Handle<Object> exports) {
     Crc64::Init(exports);
-}
+  }
 
-NODE_MODULE(Crc64, init)
+  NODE_MODULE(Crc64, init)
+};
