@@ -1,6 +1,6 @@
 {
   "name": "rdb-tools",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Redis RDB parsing, filtering and creating tools",
   "author": "Danny Yates <danny@codeaholics.org>",
   "licenses": [
